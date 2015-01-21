@@ -3,7 +3,7 @@ import cv2.cv as cv
 import sys
 import time
 
-cascade = cv2.CascadeClassifier('haarcascade_frontalface_alt.xml')
+cascade = cv2.CascadeClassifier('./haarcascade_frontalface_alt.xml')
 
 def face_detect(img, cascade):
     rects = cascade.detectMultiScale(img, scaleFactor=1.1,
@@ -48,8 +48,10 @@ while cam.isOpened():
         faceROI = gray[y:y+h, x:x+w]
 
     ## Show face ROI
-    cv2.imshow('Display face ROI', faceROI)
-
+    try:
+        cv2.imshow('Display face ROI', faceROI)
+    except Exception, e:
+        print "Ensure you have haarcascade_frontalface_alt XML file."
 
     vis = img.copy()
     draw_rects(vis, faces, (0, 255, 0))
