@@ -1,5 +1,13 @@
-## Python openCV on Mac OS
 
+To run the samples, right now you need to `cd` into the example directory containing the python files, and execute it from there.
+
+```terminal
+$ cd face_detection
+$ python camera_face_detection.py
+```
+
+
+## Python openCV on Mac OS
 
 Install `openCV` with  `brew`:
 
