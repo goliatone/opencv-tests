@@ -46,3 +46,19 @@ $ python
 If something went wrong you should get an error telling you that the `cv` module was not found.
 
 
+>==> Installing opencv from homebrew/homebrew-science
+opencv: Java optional is required to install this formula.
+You can install with Homebrew Cask:
+  brew install Caskroom/cask/java
+
+You can download from:
+  http://www.oracle.com/technetwork/java/javase/downloads/index.html
+Error: An unsatisfied requirement failed this build.
+
+Fix by typing the following command in your terminal:
+
+```terminal
+$ brew cask install Caskroom/cask/java
+```
+
+
