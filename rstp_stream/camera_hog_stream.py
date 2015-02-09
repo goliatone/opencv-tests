@@ -1,60 +1,86 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import cv2
-import cv2.cv as cv
 import numpy as np
+import argparse
+
+"""
+# video_url = "rtsp://10.8.253.69:554/ch0_0.h264"
+# video_url = "rtsp://10.8.253.69:554/MediaInput/mpeg4"
+"""
+
+class HOGFilter(object):
+    """docstring for HOGFilter"""
+    def __init__(self):
+        super(HOGFilter, self).__init__()
+        self.hog = cv2.HOGDescriptor()
+        self.hog.setSVMDetector( cv2.HOGDescriptor_getDefaultPeopleDetector() )
+
+    def detect(self, image, winStride, padding, scale):
+        found, _ = self.hog.detectMultiScale(image, winStride=winStride,
+            padding=padding, scale=scale)
+        return found
+
+    def filter(self, found):
+        filtered = []
+        for ri, r in enumerate(found):
+            for qi, q in enumerate(found):
+                if ri != qi and self.inside(r, q):
+                    break
+                else:
+                    filtered.append(r)
+        return filtered
+
+    def inside(self, r, q):
+        rx, ry, rw, rh = r
+        qx, qy, qw, qh = q
+        return rx > qx and ry > qy and rx + rw < qx + qw and ry + rh < qy + qh
 
 
-def filter_found_results(found):
-    found_filtered = []
+class UI(object):
+    """docstring for UI"""
+    def __init__(self, url):
+        super(UI, self).__init__()
+        self.url = url
+        self.camera = cv2.VideoCapture(url)
 
-    for ri, r in enumerate(found):
-        for qi, q in enumerate(found):
-            if ri != qi and inside(r, q):
-                break
-            else:
-                found_filtered.append(r)
-    return found_filtered
+    def loop(self):
+        return self.camera.isOpened()
 
-
-def inside(r, q):
-    rx, ry, rw, rh = r
-    qx, qy, qw, qh = q
-    return rx > qx and ry > qy and rx + rw < qx + qw and ry + rh < qy + qh
-
-def draw_detections(img, rects, thickness = 1, color = (0, 255, 5)):
-    for x, y, w, h in rects:
-        # the HOG detector returns slightly larger rectangles than the real objects.
-        # so we slightly shrink the rectangles to get a nicer output.
-        pad_w, pad_h = int(0.15 * w), int(0.05 * h)
-        cv2.rectangle(img, (x + pad_w, y + pad_h), (x + w - pad_w, y + h - pad_h),
-                     color, thickness)
+    def capture_frame(self):
+        _, image = self.camera.read()
+        return image
 
 
-#Open camera and set dimensions
-# cam = cv2.VideoCapture("rtsp://10.8.253.69:554/ch0_0.h264")
-cam = cv2.VideoCapture("rtsp://10.8.253.69:554/MediaInput/mpeg4")
-# cam = cv2.VideoCapture("http://10.8.253.211/snap.jpg")
-# We can't set dimensions, stream overrides
-# cam.set(cv.CV_CAP_PROP_FRAME_WIDTH, 640)
-# cam.set(cv.CV_CAP_PROP_FRAME_HEIGHT, 480)
-
-hog = cv2.HOGDescriptor()
-hog.setSVMDetector( cv2.HOGDescriptor_getDefaultPeopleDetector() )
+    def draw_detections(self, image, rects, thickness = 1, color = (0, 255, 5)):
+        for x, y, w, h in rects:
+            # the HOG detector returns slightly larger rectangles than the real objects.
+            # so we slightly shrink the rectangles to get a nicer output.
+            pad_w, pad_h = int(0.15 * w), int(0.05 * h)
+            cv2.rectangle(image, (x + pad_w, y + pad_h), (x + w - pad_w, y + h - pad_h),
+                         color, thickness)
 
 def main():
-    while cam.isOpened():
-        _, img = cam.read()
+    parser = argparse.ArgumentParser(description='HOG Camera stream')
+    parser.add_argument('-u', '--url', required=True, help='Video stream url')
+    args = parser.parse_args()
 
-        found, w = hog.detectMultiScale(img, winStride=(8, 8), padding=(32, 32), scale=1.05)
-        found_filtered = filter_found_results(found)
+    window_title = 'HOG Camera Stream'
 
-        draw_detections(img, found)
-        draw_detections(img, found_filtered, 3)
-        print '%d (%d) found' % (len(found_filtered), len(found))
-        cv2.imshow('img', img)
+    ui = UI(args.url)
+    hog = HOGFilter()
 
-        # cam = cv2.VideoCapture("http://10.8.253.211/snap.jpg")
+    while ui.loop():
+        image = ui.capture_frame()
+
+        found = hog.detect(image, winStride=(8, 8), padding=(32, 32), scale=1.05)
+        filtered = hog.filter(found)
+
+        ui.draw_detections(image, found)
+        ui.draw_detections(image, filtered, 3, (0, 0, 255))
+
+        print '%d filtered, (%d) found' % (len(filtered), len(found))
+        cv2.imshow(window_title, image)
 
         key = cv2.waitKey(10)
         if key == 27:
