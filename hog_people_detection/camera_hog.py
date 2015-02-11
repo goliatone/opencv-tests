@@ -11,6 +11,7 @@ def inside(r, q):
     return rx > qx and ry > qy and (rx + rw) < (qx + qw) and (ry + rh) < (qy + qh)
 
 def hog_detection(img):
+    #We need to convert our img from a numpy array (cv2)
     found = list(cv.HOGDetectMultiScale(cv.fromarray(img), storage, win_stride=(8,8),
         padding=(32,32), scale=1.05, group_threshold=2))
     found_filtered = []
@@ -37,12 +38,14 @@ def draw_rects(img, rects, color):
 
 
 #Open camera and set dimensions
-cam = cv2.VideoCapture(0)
+# cam = cv2.VideoCapture(0)
+# cam = cv2.VideoCapture("rtsp://10.8.253.69:554/ch0_0.h264")
+cam = cv2.VideoCapture("rtsp://10.8.253.69:554/MediaInput/mpeg4")
 cam.set(cv.CV_CAP_PROP_FRAME_WIDTH, 640)
 cam.set(cv.CV_CAP_PROP_FRAME_HEIGHT, 480)
 
 winName = "Movement Indicator"
-cv2.namedWindow(winName, cv2.CV_WINDOW_AUTOSIZE)
+# cv2.namedWindow(winName, cv2.CV_WINDOW_AUTOSIZE)
 
 # time.sleep(0.500)
 # first frames are empty, for now we hack it
