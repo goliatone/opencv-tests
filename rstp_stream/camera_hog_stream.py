@@ -7,6 +7,11 @@ import argparse
 """
 # video_url = "rtsp://10.8.253.69:554/ch0_0.h264"
 # video_url = "rtsp://10.8.253.69:554/MediaInput/mpeg4"
+
+rtsp://admin:12345@10.8.253.68:554/ch0_0.h264
+rtsp://admin:12345@10.8.253.68:554/MediaInput/mpeg4
+
+python camera_hog_stream -u rtsp://10.8.253.69:554/MediaInput/mpeg4
 """
 
 class HOGFilter(object):
@@ -61,11 +66,12 @@ class UI(object):
                          color, thickness)
 
 def main():
+
     parser = argparse.ArgumentParser(description='HOG Camera stream')
-    parser.add_argument('-u', '--url', required=True, help='Video stream url')
+    parser.add_argument('-u', '--url', required=True, help='Video stream filename or device id')
     args = parser.parse_args()
 
-    window_title = 'HOG Camera Stream'
+    window_title = parser.description
 
     ui = UI(args.url)
     hog = HOGFilter()
@@ -87,7 +93,7 @@ def main():
             cv2.destroyAllWindows()
             break
 
-    print "Goodbye"
+    print "Exit script..."
 
 if __name__ == '__main__':
     main()
