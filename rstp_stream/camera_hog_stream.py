@@ -44,7 +44,7 @@ class HOGFilter(object):
 
 class UI(object):
     """docstring for UI"""
-    def __init__(self, url):
+    def __init__(self, url=0):
         super(UI, self).__init__()
         self.url = url
         self.camera = cv2.VideoCapture(url)
@@ -64,11 +64,12 @@ class UI(object):
             pad_w, pad_h = int(0.15 * w), int(0.05 * h)
             cv2.rectangle(image, (x + pad_w, y + pad_h), (x + w - pad_w, y + h - pad_h),
                          color, thickness)
+        return image
 
 def main():
 
     parser = argparse.ArgumentParser(description='HOG Camera stream')
-    parser.add_argument('-u', '--url', required=True, help='Video stream filename or device id')
+    parser.add_argument('-u', '--url', default=0, help='Video stream filename or device id')
     args = parser.parse_args()
 
     window_title = parser.description
